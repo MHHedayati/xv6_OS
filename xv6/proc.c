@@ -122,6 +122,25 @@ growproc(int n)
   return 0;
 }
 
+// saves a PCB and writes it on a file 
+// 
+//
+int
+saveProc(int pid)
+{
+ cprintf("%d", pid);;
+ return 0;
+}
+
+// loads a PCB, create a new process and sets state as RUNNABLE 
+//
+//
+int
+loadProc(void)
+{
+ return 0;
+}
+
 // Create a new process copying p as the parent.
 // Sets up stack to return as if from system call.
 // Caller must set state of returned proc to RUNNABLE.

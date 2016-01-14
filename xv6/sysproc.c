@@ -8,6 +8,21 @@
 #include "proc.h"
 
 int
+sys_saveProc(void)
+{
+ int pid;
+ if(argint(0, &pid) < 0)
+    return -1;
+ return saveProc(pid);
+}
+
+int 
+sys_loadProc(void)
+{
+ return loadProc();
+}
+
+int
 sys_fork(void)
 {
   return fork();

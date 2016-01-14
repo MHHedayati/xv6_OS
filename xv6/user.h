@@ -2,6 +2,8 @@ struct stat;
 struct rtcdate;
 
 // system calls
+int saveProc(int pid);
+int loadProc(void);
 int fork(void);
 int exit(void) __attribute__((noreturn));
 int wait(void);
