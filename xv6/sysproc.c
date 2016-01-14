@@ -11,9 +11,12 @@ int
 sys_saveProc(void)
 {
  int pid;
- if(argint(0, &pid) < 0)
+ struct proc *ip;
+ if(argint(0, &pid) < 0 )
     return -1;
- return saveProc(pid);
+ if(argptr(1, (char**)&ip, 1) < 0)
+    return -1;
+ return saveProc(pid, ip);
 }
 
 int 
