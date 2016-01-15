@@ -25,7 +25,10 @@ sys_saveProc(void)
 int 
 sys_loadProc(void)
 {
- return loadProc();
+ struct proc *ip;
+ if(argptr(0, (char**)&ip, 1) < 0)
+    return -1;
+ return loadProc(ip);
 }
 
 int

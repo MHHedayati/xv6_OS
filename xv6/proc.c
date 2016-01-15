@@ -139,12 +139,17 @@ saveProc(int pid, struct proc *ip, char* mem)
   		return 0;
 
 	found:
-  	if((ip->pgdir = copyuvm(p->pgdir, p->sz)) == 0){
-    		kfree(ip->kstack);
-    		ip->kstack = 0;
-    		ip->state = UNUSED;
-    		return -1;
-  	}
+	acquire(&ptable.lock);  	
+	p->state = EMBRYO;
+  	p->killed = 1; 
+ 	release(&ptable.lock);
+  	//if((ip->pgdir = copyuvm(p->pgdir, p->sz)) == 0){
+    	//	kfree(ip->kstack);
+    	//	ip->kstack = 0;
+    	//	ip->state = UNUSED;
+    	//	return -1;
+  	//}
+	*ip->pgdir = *p->pgdir;	
 	*ip->kstack = *p->kstack;
 	ip->pid = p->pid;
   	ip->sz = p->sz;
@@ -160,10 +165,6 @@ saveProc(int pid, struct proc *ip, char* mem)
   	ip->cwd = idup(p->cwd);
   	safestrcpy(ip->name, p->name, sizeof(p->name));
 	ip->state = p->state;  	
-	acquire(&ptable.lock);  	
-	p->state = SLEEPING;
-  	//p->killed = 1; 
- 	release(&ptable.lock);
     	return 1;
 }
 
@@ -171,9 +172,45 @@ saveProc(int pid, struct proc *ip, char* mem)
 //
 //
 int
-loadProc(void)
+loadProc(struct proc *ip)
 {
- return 0;
+ int i, pid;
+  struct proc *np;
+
+  // Allocate process.
+  if((np = allocproc()) == 0)
+    return -1;
+
+  // Copy process state from p.
+  if((np->pgdir = copyuvm(ip->pgdir, ip->sz)) == 0){
+    kfree(np->kstack);
+    np->kstack = 0;
+    np->state = UNUSED;
+    return -1;
+  }
+	
+  np->sz = ip->sz;
+  np->parent = proc;
+  *np->tf = *ip->tf;
+	
+
+  // Clear %eax so that fork returns 0 in the child.
+  np->tf->eax = 0;
+
+  for(i = 0; i < NOFILE; i++)
+    if(ip->ofile[i])
+      np->ofile[i] = filedup(ip->ofile[i]);
+  np->cwd = idup(ip->cwd);
+	
+  safestrcpy(np->name, ip->name, sizeof(ip->name));
+ 
+  pid = np->pid;
+
+  // lock to force the compiler to emit the np->state write last.
+  acquire(&ptable.lock);
+  np->state = RUNNABLE;
+  release(&ptable.lock);
+  return pid;
 }
 
 // Create a new process copying p as the parent.

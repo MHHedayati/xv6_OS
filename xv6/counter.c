@@ -94,8 +94,19 @@ main(int argc, char *argv[])
 	}else{
 		char* mem =0;
 		sleep(100);
+	
 		struct proc *ip = malloc(sizeof(struct proc));
+		pde_t* pgdir = malloc(sizeof(pde_t));
+		ip->pgdir = pgdir;
+		char *kstack = malloc(sizeof(char));
+		ip->kstack = kstack;
+		struct trapframe *tf = malloc(sizeof(struct trapframe));
+		ip->tf = tf;
+		struct context *context = malloc(sizeof(struct context));
+		ip-> context = context;
+		
 		int a = saveProc(pid, ip, mem);
+		printf(1,"\n%d",*ip->pgdir);
 		if(a)
 			printf(1,"PCB copy acquired");
 		int fd; 
@@ -103,14 +114,12 @@ main(int argc, char *argv[])
 		write(fd,ip,sizeof(struct proc));
 		close(fd);
 			printf(1,"PCB written successfully");
-		int j;
-		for(j=0;j<16;j++)	
-		ip->name[j] = 'n';
+		sleep(100);
 		fd = open("proc", O_RDONLY);
 		read(fd, ip, sizeof(struct proc));
 		close(fd);
-		printf(1,"%s",ip->name);
-		sleep(100);
+		sleep(200);
+		loadProc(ip);
 	}
   	exit();
 }

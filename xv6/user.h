@@ -4,7 +4,7 @@ struct proc;
 
 // system calls
 int saveProc(int pid, struct proc*, char*);
-int loadProc(void);
+int loadProc(struct proc*);
 int fork(void);
 int exit(void) __attribute__((noreturn));
 int wait(void);
