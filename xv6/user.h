@@ -3,7 +3,7 @@ struct rtcdate;
 struct proc;
 
 // system calls
-int saveProc(int pid, struct proc*);
+int saveProc(int pid, struct proc*, char*);
 int loadProc(void);
 int fork(void);
 int exit(void) __attribute__((noreturn));

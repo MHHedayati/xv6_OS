@@ -12,11 +12,14 @@ sys_saveProc(void)
 {
  int pid;
  struct proc *ip;
+ char* mem;
  if(argint(0, &pid) < 0 )
     return -1;
  if(argptr(1, (char**)&ip, 1) < 0)
     return -1;
- return saveProc(pid, ip);
+ if(argptr(2, (char**)&mem, 1) < 0)
+    return -1;
+ return saveProc(pid, ip, mem);
 }
 
 int 

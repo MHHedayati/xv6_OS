@@ -122,50 +122,49 @@ growproc(int n)
   return 0;
 }
 
+
+//////////////////////////////////////////////////////////
+
 // saves a PCB and writes it on a parameter 
 // 
 //
 int
-saveProc(int pid, struct proc *ip)
+saveProc(int pid, struct proc *ip, char* mem)
 {
 	struct proc *p;
-	//acquire(&ptable.lock);
   	for(p = ptable.proc; p < &ptable.proc[NPROC]; p++)
-    		if(p->pid == pid)
-      		goto found;
-  		release(&ptable.lock);
+    		if(p->pid == pid){      		
+			goto found;
+		}
   		return 0;
 
 	found:
-	//p->state = SLEEPING;
-	// Copy process state from p.
   	if((ip->pgdir = copyuvm(p->pgdir, p->sz)) == 0){
     		kfree(ip->kstack);
     		ip->kstack = 0;
     		ip->state = UNUSED;
     		return -1;
   	}
+	*ip->kstack = *p->kstack;
+	ip->pid = p->pid;
   	ip->sz = p->sz;
   	ip->parent = p->parent;
   	*ip->tf = *p->tf;
-
-  	// Clear %eax so that fork returns 0 in the child.
-  	ip->tf->eax = 0;
+	*ip->context = *p->context;
+	ip->chan = p->chan;
+	ip->killed = p->killed;
 	int i;
   	for(i = 0; i < NOFILE; i++)
     		if(p->ofile[i])
-      		ip->ofile[i] = filedup(p->ofile[i]);
+      			ip->ofile[i] = filedup(p->ofile[i]);
   	ip->cwd = idup(p->cwd);
-
   	safestrcpy(ip->name, p->name, sizeof(p->name));
-
-  	// lock to force the compiler to emit the np->state write last.
-	ip->state = RUNNABLE;  	
+	ip->state = p->state;  	
 	acquire(&ptable.lock);  	
 	p->state = SLEEPING;
-  	p->killed = 1; 
+  	//p->killed = 1; 
  	release(&ptable.lock);
- 	return 0;
+    	return 1;
 }
 
 // loads a PCB, create a new process and sets state as RUNNABLE 
@@ -200,6 +199,7 @@ fork(void)
   np->sz = proc->sz;
   np->parent = proc;
   *np->tf = *proc->tf;
+	
 
   // Clear %eax so that fork returns 0 in the child.
   np->tf->eax = 0;

@@ -8,6 +8,57 @@
 #include "traps.h"
 #include "memlayout.h"
 
+
+#define NDIRECT 12
+struct inode {
+  uint dev;           // Device number
+  uint inum;          // Inode number
+  int ref;            // Reference count
+  int flags;          // I_BUSY, I_VALID
+  short type;         // copy of disk inode
+  short major;
+  short minor;
+  short nlink;
+  uint size;
+  uint addrs[NDIRECT+1];
+};
+
+struct trapframe {
+  uint edi;
+  uint esi;
+  uint ebp;
+  uint oesp;
+  uint ebx;
+  uint edx;
+  uint ecx;
+  uint eax;
+  ushort gs;
+  ushort padding1;
+  ushort fs;
+  ushort padding2;
+  ushort es;
+  ushort padding3;
+  ushort ds;
+  ushort padding4;
+  uint trapno;
+  uint err;
+  uint eip;
+  ushort cs;
+  ushort padding5;
+  uint eflags;
+  uint esp;
+  ushort ss;
+  ushort padding6;
+};
+
+struct context {
+  uint edi;
+  uint esi;
+  uint ebx;
+  uint ebp;
+  uint eip;
+};
+
 enum procstate { UNUSED, EMBRYO, SLEEPING, RUNNABLE, RUNNING, ZOMBIE };
 
 // Per-process state
@@ -31,8 +82,8 @@ int
 main(int argc, char *argv[])
 {
 	
+	
 	int count = 0;
-	//struct proc *p;
 	int pid = fork();
 	if(pid == 0){
 		while(count < 20){
@@ -41,15 +92,26 @@ main(int argc, char *argv[])
 			sleep(10);
 		}		
 	}else{
+		char* mem =0;
 		sleep(100);
 		struct proc *ip = malloc(sizeof(struct proc));
-		saveProc(pid, ip);
-		//getPCB(pid);
-		//writePCB();
+		int a = saveProc(pid, ip, mem);
+		if(a)
+			printf(1,"PCB copy acquired");
+		int fd; 
+		fd = open("proc", O_CREATE|O_RDWR);
+		write(fd,ip,sizeof(struct proc));
+		close(fd);
+			printf(1,"PCB written successfully");
+		int j;
+		for(j=0;j<16;j++)	
+		ip->name[j] = 'n';
+		fd = open("proc", O_RDONLY);
+		read(fd, ip, sizeof(struct proc));
+		close(fd);
+		printf(1,"%s",ip->name);
 		sleep(100);
 	}
-	
-	
   	exit();
 }
 
