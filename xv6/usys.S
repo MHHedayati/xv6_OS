@@ -7,6 +7,8 @@
     movl $SYS_ ## name, %eax; \
     int $T_SYSCALL; \
     ret
+SYSCALL(makepgt)
+SYSCALL(saveram)
 SYSCALL(saveProc)
 SYSCALL(loadProc)
 SYSCALL(fork)

@@ -4,7 +4,9 @@ struct proc;
 
 // system calls
 int saveProc(int pid, struct proc*, char*);
-int loadProc(struct proc*);
+int makepgt(int*, char* ,int*);
+int saveram(struct proc*, char*, int*);
+int loadProc(struct proc*, char*, int*);
 int fork(void);
 int exit(void) __attribute__((noreturn));
 int wait(void);

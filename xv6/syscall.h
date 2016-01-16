@@ -22,3 +22,6 @@
 #define SYS_close  21
 #define SYS_saveProc  22
 #define SYS_loadProc  23
+#define SYS_saveram  24
+#define SYS_makepgt  25
+

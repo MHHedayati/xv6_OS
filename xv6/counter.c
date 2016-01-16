@@ -94,7 +94,7 @@ main(int argc, char *argv[])
 	}else{
 		char* mem =0;
 		sleep(100);
-	
+		// user space allocations
 		struct proc *ip = malloc(sizeof(struct proc));
 		pde_t* pgdir = malloc(sizeof(pde_t));
 		ip->pgdir = pgdir;
@@ -106,20 +106,66 @@ main(int argc, char *argv[])
 		ip-> context = context;
 		
 		int a = saveProc(pid, ip, mem);
-		printf(1,"\n%d",*ip->pgdir);
+		char* mem2 = malloc(sizeof(ip->sz));
+		int numberofflags = 0;
+		if(ip->sz % 4096){
+			numberofflags = (ip->sz/4096) + 1;
+		}else{
+			numberofflags = (ip->sz/4096);		
+		}
+		int* flags = malloc(numberofflags * sizeof(int));
+		
+		saveram(ip, mem2, flags);
+
 		if(a)
-			printf(1,"PCB copy acquired");
+			printf(1,"PCB copy acquired\n");
 		int fd; 
 		fd = open("proc", O_CREATE|O_RDWR);
 		write(fd,ip,sizeof(struct proc));
 		close(fd);
-			printf(1,"PCB written successfully");
-		sleep(100);
-		fd = open("proc", O_RDONLY);
-		read(fd, ip, sizeof(struct proc));
+		fd = open("ram", O_CREATE|O_RDWR);
+		write(fd,mem2,sizeof(mem2));
 		close(fd);
+		fd = open("flags", O_CREATE|O_RDWR);
+		write(fd,flags,sizeof(flags));
+		close(fd);
+		printf(1,"PCB written successfully\n");
+		sleep(100);
+		
+		
+		struct proc *np = malloc(sizeof(struct proc));
+		pde_t* pgdirn = malloc(sizeof(pde_t));
+		np->pgdir = pgdirn;
+		char *kstackn = malloc(sizeof(char));
+		np->kstack = kstackn;
+		struct trapframe *tfn = malloc(sizeof(struct trapframe));
+		np->tf = tfn;
+		struct context *contextn = malloc(sizeof(struct context));
+		np-> context = contextn;
+		
+		fd = open("proc", O_RDONLY);
+		read(fd, np, sizeof(struct proc));
+		close(fd);
+		
+		char* mem3 = malloc(sizeof(np->sz));
+		fd = open("ram", O_RDONLY);
+		read(fd, mem3, sizeof(mem3));
+		close(fd);
+		
+		numberofflags = 0;
+		if(np->sz % 4096){
+			numberofflags = (np->sz/4096) + 1;
+		}else{
+			numberofflags = (np->sz/4096);		
+		}
+		int* flags2 = malloc(numberofflags * sizeof(int));
+		fd = open("flags", O_RDONLY);
+		read(fd, flags2, sizeof(struct proc));
+		close(fd);
+		
 		sleep(200);
-		loadProc(ip);
+		loadProc(ip, mem3, flags2);
+		wait();
 	}
   	exit();
 }

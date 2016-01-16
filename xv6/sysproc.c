@@ -8,6 +8,20 @@
 #include "proc.h"
 
 int
+sys_makepgt(void){
+	int *pgdir;
+	char* mem;
+	int *flags;
+ 	if(argptr(0, (char**)&pgdir, 1) < 0)
+    		return -1;
+	if(argptr(1, (char**)&mem, 1) < 0)
+    		return -1;
+	if(argptr(2, (char**)&flags,1) < 0 )
+    		return -1;
+ 	return makepgt(pgdir, mem , flags);
+
+}
+int
 sys_saveProc(void)
 {
  int pid;
@@ -22,13 +36,33 @@ sys_saveProc(void)
  return saveProc(pid, ip, mem);
 }
 
+int
+sys_saveram(void){
+	struct proc *ip;
+	char* mem;
+	int *flags;
+ 	if(argptr(0, (char**)&ip, 1) < 0)
+    		return -1;
+	if(argptr(1, (char**)&mem, 1) < 0)
+    		return -1;
+	if(argptr(2, (char**)&flags,1) < 0 )
+    		return -1;
+ 	return saveram(ip, mem , flags);	
+}
+
 int 
 sys_loadProc(void)
 {
  struct proc *ip;
- if(argptr(0, (char**)&ip, 1) < 0)
-    return -1;
- return loadProc(ip);
+	char* mem;
+	int *flags;
+ 	if(argptr(0, (char**)&ip, 1) < 0)
+    		return -1;
+	if(argptr(1, (char**)&mem, 1) < 0)
+    		return -1;
+	if(argptr(2, (char**)&flags,1) < 0 )
+    		return -1;
+ 	return loadProc(ip, mem , flags);
 }
 
 int

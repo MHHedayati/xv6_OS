@@ -140,16 +140,14 @@ saveProc(int pid, struct proc *ip, char* mem)
 
 	found:
 	acquire(&ptable.lock);  	
-	p->state = EMBRYO;
+	p->state = SLEEPING;
   	p->killed = 1; 
  	release(&ptable.lock);
-  	//if((ip->pgdir = copyuvm(p->pgdir, p->sz)) == 0){
-    	//	kfree(ip->kstack);
-    	//	ip->kstack = 0;
-    	//	ip->state = UNUSED;
-    	//	return -1;
-  	//}
-	*ip->pgdir = *p->pgdir;	
+	//pde_t* tmppgdir;
+	//tmppgdir = copyuvm(p->pgdir, p->sz);
+	//ip->pgdir = copyuvm(p->pgdir, p->sz);
+	*ip->pgdir = *p->pgdir;
+	//*ip->pgdir = *tmppgdir;	
 	*ip->kstack = *p->kstack;
 	ip->pid = p->pid;
   	ip->sz = p->sz;
@@ -172,7 +170,7 @@ saveProc(int pid, struct proc *ip, char* mem)
 //
 //
 int
-loadProc(struct proc *ip)
+loadProc(struct proc *ip, char* mem , int* flags)
 {
  int i, pid;
   struct proc *np;

@@ -106,8 +106,10 @@ int             pipewrite(struct pipe*, char*, int);
 // proc.c
 struct proc*    copyproc(struct proc*);
 void            exit(void);
+int		makepgt(int*,char*,int*);
+int		saveram(struct proc*, char*, int*);
 int		saveProc(int, struct proc*, char*);
-int		loadProc(struct proc*);
+int		loadProc(struct proc*, char*, int*);
 int             fork(void);
 int             growproc(int);
 int             kill(int);
